@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, ScrollView, Dimensions, TouchableWithoutFeedback, TouchableOpacity, Picker, FlatList } from 'react-native'
+import { Text, StyleSheet, View, ScrollView, Dimensions, TouchableWithoutFeedback, TouchableOpacity, Picker, FlatList, Platform } from 'react-native'
 import MapView from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -58,7 +58,8 @@ const parkings = [
 
 export default class Map extends Component {
   state = {
-    hours: {}
+    hours: {},
+    active: null
   }
 
   componentDidMount() {
@@ -78,7 +79,7 @@ export default class Map extends Component {
   renderParking(item) {
     const { hours } = this.state;
     return (
-      <View key={`parking-${item.id}`} style={styles.parking}>
+      <View  key={`parking-${item.id}`} style={[styles.parking, styles.shadow]}>
         <View style={{ flex: 1, flexDirection: 'column' }}>
           <Text style={{ fontSize: 16 }}>x {item.spots} {item.title}</Text>
           {/* <Picker
@@ -156,10 +157,18 @@ export default class Map extends Component {
            <Marker 
              key={`marker-${parking.id}`}
              coordinate={parking.coordinate}
+             onPress={() => this.setState({
+                active: parking.id
+              })}
            >
-             <View style={styles.marker}>
-               <Text>$ {parking.price}</Text><Text> ({parking.free})/({parking.spots}) </Text>
-             </View>
+              <View style={[
+                styles.marker,
+                styles.shadow,
+                this.state.active === parking.id ? styles.active : null,
+              ]}>
+                <Text style={{ color: '#840815', fontWeight: 'bold' }}>$ {parking.price}</Text>
+                <Text style={{ color: '#70818A' }}> ({parking.free})/({parking.spots}) </Text>
+              </View>
            </Marker>
          ))}
        </MapView>
@@ -185,7 +194,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     left: 0,
-    bottom: 24,
+    bottom: 0,
+    paddingBottom: 24
   },
   parking: {
     flexDirection: "row",
@@ -203,15 +213,31 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   marker: {
+    flexDirection: 'row',
     backgroundColor: 'white',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 12,
-    },
-    shadowOpacity: 0.58,
-    shadowRadius: 16.00,
-
-    elevation: 24,
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  shadow: {
+    ...Platform.select({
+      android: {
+        borderWidth: 1.9,
+        borderColor: '#00000024',
+      },
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 12,
+        },
+        shadowOpacity: 0.58,
+        shadowRadius: 16.00,
+      }
+    }),
+  },
+  active: {
+    borderColor: '#840815',
+    borderWidth: 1
   }
 })
